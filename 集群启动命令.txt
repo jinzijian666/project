@@ -173,3 +173,9 @@ kylin依赖于Hadoop/Hive/Zookeeper/HBase
 
 phoenix依赖于zookeeper集群/hadoop/HBase
 启动phoenix:/export/servers/apache-phoenix-4.14.0-HBase-1.1-bin/bin/sqlline.py
+
+
+
+
+
+ctyccycghghchgcucuf
