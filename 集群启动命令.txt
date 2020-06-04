@@ -1,0 +1,175 @@
+﻿   Scanner sc = new Scanner(System.in);
+            int n = sc.nextInt();
+
+Linux下清理内存命令
+
+free -m
+
+sync
+echo 1 > /proc/sys/vm/drop_caches
+echo 2 > /proc/sys/vm/drop_caches
+echo 3 > /proc/sys/vm/drop_caches
+
+free -m
+
+
+
+
+手动进入安全模式
+hdfs dfsadmin -safemode enter
+手动退出安全模式可以用下面命令：
+hdfs dfsadmin -safemode leave
+
+  ● 查看当前服务器中的所有topic
+/export/servers/kafka/bin/kafka-topics.sh --list --zookeeper  node01:2181
+  ● 创建topic
+/export/servers/kafka/bin/kafka-topics.sh --create --zookeeper node01:2181 --replication-factor 2 --partitions 3 --topic flink_kafka
+  ● 查看某个Topic的详情
+/export/servers/kafka/bin/kafka-topics.sh --topic flink_kafka --describe --zookeeper node01:2181
+  ● 删除topic
+/export/servers/kafka/bin/kafka-topics.sh --delete --zookeeper node01:2181 --topic flink_kafka
+  ● 通过shell命令发送消息
+/export/servers/kafka/bin/kafka-console-producer.sh --broker-list node01:9092 --topic flink_kafka
+  ● 通过shell消费消息
+/export/servers/kafka/bin/kafka-console-consumer.sh --zookeeper node01:2181 --from-beginning --topic flink_kafka
+/export/servers/kafka/bin/kafka-console-consumer.sh --bootstrap-server node01:9092 --topic flink_kafka --from-beginning 
+  ● 修改分区
+ /export/servers/kafka/bin/kafka-topics.sh --alter --partitions 4 --topic flink_kafka --zookeeper node01:2181
+
+
+1.重启Flink
+/export/servers/flink/bin/stop-cluster.sh
+/export/servers/flink/bin/start-cluster.sh
+2.使用FlinkOnYarn的Job分离模式提交jar包到Yarn集群执行
+ /export/servers/flink/bin/flink run -m yarn-cluster -yn 2 -yjm 1024 -ytm 1024 -c cn.itcast.hello.WordCount /root/wc.jar
+
+
+/export/servers/hadoop/sbin/mr-jobhistory-daemon.sh start historyserver
+hadoop的pi计算
+hadoop jar hadoop-mapreduce-examples-2.6.0-cdh5.14.0.jar pi 20 50
+
+/export/servers/spark/sbin/start-history-server.sh
+SPARK-HA 
+5.启动集群
+先在node01上执行
+spark/sbin/start-all.sh
+再在node02上再启动一个master
+spark/sbin/start-master.sh
+
+
+hive根目录下
+	nohup bin/hive --service metastore 2>&1 &
+	nohup bin/hive --service hiveserver2 2>&1 &
+
+客户端连接
+   bin/beeline    bin/hive
+   !connect jdbc:hive2://node01:10000
+
+如何编写SQL: 
+	格式:  select  [distinct] 字段列表|表达式  from 表  where 条件 group by  分组字段  order by 排序字段 desc|asc having 条件 limit 起始条数 , 展示多少条 
+--开启本地模式
+    set hive.exec.mode.local.auto=true;
+加载数据 : 
+		格式:  load data  [local] inpath  '数据的路径'  into  table   表名  partition(datestr =""); 
+		如果加了local:  hdfs  dfs -put 操作    |  hadoop fs  -put
+		如果没有local:  hdfs  dfs -mv 操作   |  hadoop fs  -mv
+
+flume启动的命令的属性:
+		bin/flume-ng agent -c conf -f conf/netcat-logger.conf -n a1  -Dflume.root.logger=INFO,console
+		-c |-conf :  描述配置文件在那个路径下
+		-f | -file :  采集文件的路径
+		-n | -name:  flume的agent的名称, 和配置文件制定的agent的名称保持一致
+
+埋点项目:
+启动nginx
+	cd /export/servers/nginx
+    sbin/nginx -c conf/nginx.conf
+停止nginx:
+    sbin/nginx -s quit
+访问页面eg:http://node01/index.html
+观察自定义日志采集文件是否有对应的内容输出
+tail  -f  logs/user_defined.log
+
+impala来源cloudera公司, 后期贡献给apache, 提供准实时的交互式的SQL查询工具(数仓工具), 比hive要快很多
+impala是基于hive, 并且只基于内存操作
+impala启动: 保证hive先启动  , hive的启动保证hadoop启动
+hive适合于批处理 : 
+impala适合于小量数据操作
+hive将大量的数据计算完成后, 产生一个结果表数据, 如果需要在结果表上再次进行分析, 建议采用impala操作
+1) 执行流程:
+	hive : SQL ---> 编译  --> MapReduce --> yarn
+	impala: SQL --->编译 ---> 执行计划树 ---> 执行
+7) 适用场景: 
+	hive: 适用于 大量的 批处理操作
+	impala: 配合hive使用, 对hive结果数据, 进行再次分析, impala不支持自定义UDF函数
+在impala中执行操作, 在hive中是可以及时的看的到的. 
+		但是如果在hive中执行了相关的操作, 在impala中是及时看不到的, 需要impala对元数据进行刷新
+impala不支持自定义UDF函数
+
+主节点启动:
+service impala-state-store start
+service impala-catalog start
+service impala-server start
+impala-shell控制台
+
+从节点启动 :  
+service  impala-server  start
+
+
+es集群:
+sudo  sysctl -w vm.max_map_count=262144
+nohup /export/servers/es/elasticsearch-6.7.0/bin/elasticsearch 2>&1 &
+
+cd /export/servers/es/elasticsearch-head/node_modules/grunt/bin/
+nohup ./grunt server >/dev/null 2>&1 &
+netstat -nltp | grep 9100
+
+cd /export/servers/es/kibana-6.7.0-linux-x86_64
+nohup bin/kibana >/dev/null 2>&1 &
+ps -ef | grep node
+
+hbase集群(先启动ZK和hadoop):
+start-hbase.sh
+hbase shell
+
+在kafka启动前，一定要让zookeeper启动起来
+cd /export/servers/kafka_2.11-1.0.0/bin
+前端  
+./kafka-server-start.sh  /export/servers/kafka_2.11-1.0.0/config/server.properties
+后台  
+nohup ./kafka-server-start.sh /export/servers/kafka_2.11-1.0.0/config/server.properties 2>&1 &
+./kafka-server-stop.sh
+登录的前提是, 通过jps是可以看到kafka的进程
+登录zookeeper: zkCli.sh
+执行: ls /brokers/ids
+1)创建topic
+创建一个名字为test的主题， 有三个分区，有两个副本
+cd /export/servers/kafka_2.11-1.0.0
+bin/kafka-topics.sh --create --zookeeper node01:2181 --replication-factor 2 --partitions 3 --topic testname
+查看  
+bin/kafka-topics.sh  --list --zookeeper node01:2181,node02:2181,node03:2181
+生产者  
+bin/kafka-console-producer.sh --broker-list node01:9092,node02:9092,node03:9092 --topic testname
+消费者  
+bin/kafka-console-consumer.sh --from-beginning --topic testname  --zookeeper node01:2181,node02:2181,node03:2181
+运行describe查看topic的相关详细信息  bin/kafka-topics.sh --describe --zookeeper node01:2181 --topic testname
+删除topic  kafka-topics.sh --zookeeper zkhost:port --delete --topic topicName
+启动kakfa-eagle
+cd /export/servers/kafka-eagle-bin-1.3.2/kafka-eagle-web-1.3.2/bin
+chmod u+x ke.sh
+./ke.sh start
+
+启动kudu集群 在每台服务器上都执行下面脚本
+service kudu-master start
+service kudu-tserver start
+如果启动失败  看日志/var/log/kudu
+关闭kudu集群 在每台服务器上都执行下面脚本
+service kudu-master stop
+service kudu-tserver stop
+
+
+kylin依赖于Hadoop/Hive/Zookeeper/HBase
+
+
+phoenix依赖于zookeeper集群/hadoop/HBase
+启动phoenix:/export/servers/apache-phoenix-4.14.0-HBase-1.1-bin/bin/sqlline.py
